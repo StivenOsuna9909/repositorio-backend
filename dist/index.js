@@ -3,6 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config(); // Carga las variables del archivo .env
 const server_1 = __importDefault(require("./classes/server"));
 const usuario_1 = __importDefault(require("./routes/usuario"));
 const mongoose_1 = __importDefault(require("mongoose"));
@@ -18,8 +20,13 @@ server.app.use(body_parser_1.default.json());
 // Rutas de mi app
 server.app.use('/user', usuario_1.default);
 server.app.use('/carrito', carrito_1.default);
+// Obtener la URL de conexión de la base de datos
+const mongoUrl = process.env.MONGO_URL;
+if (!mongoUrl) {
+    throw new Error('MONGO_URL no está definido en las variables de entorno');
+}
 // Conectar DB
-mongoose_1.default.connect('mongodb://localhost:27017/server', { useNewUrlParser: true, useCreateIndex: true }, (err) => {
+mongoose_1.default.connect(mongoUrl, (err) => {
     if (err)
         throw err;
     console.log('Base de datos ONLINE');

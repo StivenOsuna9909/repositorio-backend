@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config(); // Carga las variables del archivo .env
+
 import Server from './classes/server';
 import userRoutes from './routes/usuario';
 import mongoose from 'mongoose';
@@ -18,10 +21,16 @@ server.app.use(bodyParser.json());
 server.app.use('/user', userRoutes);
 server.app.use('/carrito', cartRoutes);
 
+// Obtener la URL de conexión de la base de datos
+const mongoUrl = process.env.MONGO_URL;
+
+if (!mongoUrl) {
+  throw new Error('MONGO_URL no está definido en las variables de entorno');
+}
+
 // Conectar DB
 mongoose.connect(
-  'mongodb://localhost:27017/server',
-  { useNewUrlParser: true, useCreateIndex: true },
+  mongoUrl,
   (err) => {
     if (err) throw err;
     console.log('Base de datos ONLINE');
