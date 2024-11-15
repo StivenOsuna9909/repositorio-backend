@@ -29,7 +29,6 @@ userRoutes.post('/login', (req: Request, res: Response ) => {
                 _id: userDB._id,
                 nombre: userDB.nombre,
                 email: userDB.email,
-                avatar: userDB.avatar
             });
 
             res.json({
