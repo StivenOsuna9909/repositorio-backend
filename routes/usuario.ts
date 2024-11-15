@@ -13,7 +13,7 @@ userRoutes.post('/login', async (req: Request, res: Response) => {
 
     try {
         // Buscar al usuario por email
-        const userDB = await Usuario.findOne({ email: body.email }).exec();
+        const userDB = await Usuario.findOne({ email: body.email });
 
         // Si no se encuentra el usuario, retornamos un mensaje de error
         if (!userDB) {
@@ -53,6 +53,7 @@ userRoutes.post('/login', async (req: Request, res: Response) => {
         });
     }
 });
+
 
 
 
