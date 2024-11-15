@@ -13,7 +13,7 @@ userRoutes.post('/login', async (req: Request, res: Response) => {
 
     try {
         // Buscar al usuario por email
-        const userDB = await Usuario.findOne({ email: body.email });
+        const userDB = await Usuario.findOne({ email: body.email }).exec();
 
         // Si no se encuentra el usuario, retornamos un mensaje de error
         if (!userDB) {
@@ -23,8 +23,10 @@ userRoutes.post('/login', async (req: Request, res: Response) => {
             });
         }
 
-        // Comparamos la contraseña
-        if (userDB.compararPassword(body.password)) {
+        // Comparamos la contraseña - AGREGAMOS AWAIT aquí
+        const passwordCorrect = await userDB.compararPassword(body.password);
+        
+        if (passwordCorrect) {
             // Si la contraseña es correcta, generamos un token
             const tokenUser = Token.getJwtToken({
                 _id: userDB._id,
@@ -35,7 +37,12 @@ userRoutes.post('/login', async (req: Request, res: Response) => {
             // Respondemos con el token generado
             return res.json({
                 ok: true,
-                token: tokenUser
+                token: tokenUser,
+                usuario: {
+                    _id: userDB._id,
+                    nombre: userDB.nombre,
+                    email: userDB.email
+                }
             });
         } else {
             return res.json({
@@ -46,7 +53,6 @@ userRoutes.post('/login', async (req: Request, res: Response) => {
 
     } catch (err) {
         console.error('Error en el login:', err);
-        // Manejo de errores internos del servidor
         return res.status(500).json({
             ok: false,
             mensaje: 'Error interno del servidor'
