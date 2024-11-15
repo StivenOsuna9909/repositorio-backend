@@ -7,47 +7,59 @@ import { verificaToken } from '../middlewares/autenticacion';
 const userRoutes = Router();
 
 
-// Login
-userRoutes.post('/login', (req: Request, res: Response ) => {
-
-    const body = req.body;
-
-    Usuario.findOne({ email: body.email }, ( err:any, userDB:any ) => {
-
-        if ( err ) throw err;
-
-        if ( !userDB ) {
-            return res.json({
-                ok: false,
-                mensaje: 'Usuario/contraseña no son correctos'
-            });
-        }
-
-        if ( userDB.compararPassword( body.password ) ) {
-
-            const tokenUser = Token.getJwtToken({
-                _id: userDB._id,
-                nombre: userDB.nombre,
-                email: userDB.email
-            });
-
-            res.json({
-                ok: true,
-                token: tokenUser
-            });
-
-        } else {
-            return res.json({
-                ok: false,
-                mensaje: 'Usuario/contraseña no son correctos ***'
-            });
-        }
-
-
-    })
-
-
-});
+userRoutes.post('/login', async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+  
+    try {
+      // Validar si se envían los campos necesarios
+      if (!email || !password) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: 'Email y contraseña son obligatorios',
+        });
+      }
+  
+      // Buscar el usuario por email
+      const userDB = await Usuario.findOne({ email });
+      if (!userDB) {
+        return res.status(401).json({
+          ok: false,
+          mensaje: 'Usuario o contraseña incorrectos',
+        });
+      }
+  
+      // Comparar la contraseña
+      const passwordMatch = userDB.compararPassword(password);
+      if (!passwordMatch) {
+        return res.status(401).json({
+          ok: false,
+          mensaje: 'Usuario o contraseña incorrectos',
+        });
+      }
+  
+      // Generar token
+      const tokenUser = Token.getJwtToken({
+        _id: userDB._id,
+        nombre: userDB.nombre,
+        email: userDB.email,
+      });
+  
+      // Responder con éxito
+      return res.json({
+        ok: true,
+        token: tokenUser,
+      });
+    } catch (err) {
+      console.error('Error en el login:', err);
+  
+      // Manejar cualquier error inesperado
+      return res.status(500).json({
+        ok: false,
+        mensaje: 'Error interno del servidor',
+      });
+    }
+  });
+  
 
 
 
