@@ -29,13 +29,14 @@ if (!mongoUrl) {
 }
 
 // Conectar DB
-mongoose.connect(
-  mongoUrl,
-  (err) => {
-    if (err) throw err;
-    console.log('Base de datos ONLINE');
-  }
-);
+mongoose.connect(mongoUrl, {
+})
+.then(() => {
+  console.log('Base de datos ONLINE');
+})
+.catch((err) => {
+  console.error('Error al conectar a la base de datos:', err);
+});
 
 // Levantar express
 server.start(() => {

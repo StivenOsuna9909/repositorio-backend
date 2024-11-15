@@ -26,10 +26,12 @@ if (!mongoUrl) {
     throw new Error('MONGO_URL no está definido en las variables de entorno');
 }
 // Conectar DB
-mongoose_1.default.connect(mongoUrl, (err) => {
-    if (err)
-        throw err;
+mongoose_1.default.connect(mongoUrl, {})
+    .then(() => {
     console.log('Base de datos ONLINE');
+})
+    .catch((err) => {
+    console.error('Error al conectar a la base de datos:', err);
 });
 // Levantar express
 server.start(() => {

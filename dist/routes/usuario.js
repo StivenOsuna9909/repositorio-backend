@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -65,18 +74,19 @@ userRoutes.post('/create', (req, res) => {
     });
 });
 // Actualizar usuario
-userRoutes.post('/update', autenticacion_1.verificaToken, (req, res) => {
+userRoutes.post('/update', autenticacion_1.verificaToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = {
         nombre: req.body.nombre || req.usuario.nombre,
         email: req.body.email || req.usuario.email,
     };
-    usuario_model_1.Usuario.findByIdAndUpdate(req.usuario._id, user, { new: true }, (err, userDB) => {
-        if (err)
-            throw err;
+    try {
+        // Usar async/await para manejar la promesa
+        const userDB = yield usuario_model_1.Usuario.findByIdAndUpdate(req.usuario._id, user, { new: true } // Opciones para retornar el nuevo documento
+        );
         if (!userDB) {
             return res.json({
                 ok: false,
-                mensaje: 'No existe un usuario con ese ID'
+                mensaje: 'No existe un usuario con ese ID',
             });
         }
         const tokenUser = token_1.default.getJwtToken({
@@ -86,8 +96,15 @@ userRoutes.post('/update', autenticacion_1.verificaToken, (req, res) => {
         });
         res.json({
             ok: true,
-            token: tokenUser
+            token: tokenUser,
         });
-    });
-});
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({
+            ok: false,
+            mensaje: 'Error al actualizar el usuario',
+        });
+    }
+}));
 exports.default = userRoutes;

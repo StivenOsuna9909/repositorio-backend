@@ -12,7 +12,7 @@ userRoutes.post('/login', (req: Request, res: Response ) => {
 
     const body = req.body;
 
-    Usuario.findOne({ email: body.email }, ( err, userDB ) => {
+    Usuario.findOne({ email: body.email }, ( err:any, userDB:any ) => {
 
         if ( err ) throw err;
 
@@ -88,21 +88,24 @@ userRoutes.post('/create', ( req: Request, res: Response ) => {
 
 
 // Actualizar usuario
-userRoutes.post('/update', verificaToken, (req: any, res: Response ) => {
-
+userRoutes.post('/update', verificaToken, async (req: any, res: any) => {
     const user = {
         nombre: req.body.nombre || req.usuario.nombre,
-        email : req.body.email  || req.usuario.email,
-    }
+        email: req.body.email || req.usuario.email,
+    };
 
-    Usuario.findByIdAndUpdate( req.usuario._id, user, { new: true }, (err, userDB) => {
+    try {
+        // Usar async/await para manejar la promesa
+        const userDB = await Usuario.findByIdAndUpdate(
+            req.usuario._id,
+            user,
+            { new: true } // Opciones para retornar el nuevo documento
+        );
 
-        if ( err ) throw err;
-
-        if ( !userDB ) {
+        if (!userDB) {
             return res.json({
                 ok: false,
-                mensaje: 'No existe un usuario con ese ID'
+                mensaje: 'No existe un usuario con ese ID',
             });
         }
 
@@ -114,12 +117,16 @@ userRoutes.post('/update', verificaToken, (req: any, res: Response ) => {
 
         res.json({
             ok: true,
-            token: tokenUser
+            token: tokenUser,
         });
 
-
-    });
-
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            ok: false,
+            mensaje: 'Error al actualizar el usuario',
+        });
+    }
 });
 
 
