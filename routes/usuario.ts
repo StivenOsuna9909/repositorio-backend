@@ -8,45 +8,50 @@ const userRoutes = Router();
 
 
 // Login
-userRoutes.post('/login', (req: Request, res: Response ) => {
-
+userRoutes.post('/login', async (req: Request, res: Response) => {
     const body = req.body;
 
-    Usuario.findOne({ email: body.email }, ( err: any, userDB:any ) => {
+    try {
+        // Buscar al usuario por email
+        const userDB = await Usuario.findOne({ email: body.email });
 
-        if ( err ) throw err;
-
-        if ( !userDB ) {
+        // Si no se encuentra el usuario, retornamos un mensaje de error
+        if (!userDB) {
             return res.json({
                 ok: false,
-                mensaje: 'Usuario/contraseña no son correctos'
+                mensaje: 'Usuario o contraseña no son correctos'
             });
         }
 
-        if ( userDB.compararPassword( body.password ) ) {
-
+        // Comparamos la contraseña
+        if (userDB.compararPassword(body.password)) {
+            // Si la contraseña es correcta, generamos un token
             const tokenUser = Token.getJwtToken({
                 _id: userDB._id,
                 nombre: userDB.nombre,
                 email: userDB.email,
             });
 
+            // Respondemos con el token generado
             res.json({
                 ok: true,
                 token: tokenUser
             });
-
         } else {
             return res.json({
                 ok: false,
-                mensaje: 'Usuario/contraseña no son correctos ***'
+                mensaje: 'Usuario o contraseña no son correctos'
             });
         }
 
-
-    })
-
-
+    } catch (err) {
+        console.error('Error en el login:', err);
+        // Manejo de errores internos del servidor
+        return res.status(500).json({
+            ok: false,
+            mensaje: 'Error interno del servidor'
+        });
+    }
 });
 
 
